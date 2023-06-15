@@ -1,0 +1,67 @@
+C251 COMPILER V5.60.0,  MOTOR                                                              17/10/22  16:58:23  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE MOTOR
+OBJECT MODULE PLACED IN .\Out_File\MOTOR.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE MOTOR.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Libraries\l
+                    -ibraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src) DEBUG P
+                    -RINT(.\Out_File\MOTOR.lst) OBJECT(.\Out_File\MOTOR.obj) 
+
+stmt  level    source
+
+    1          #include "headfile.h"
+    2          
+    3          
+    4          void motor_out(int Lpwm,int Rpwm)
+    5          {
+    6   1              if(Lpwm>800) Lpwm=800;
+    7   1              if(Rpwm>800) Rpwm=800;
+    8   1              if(Lpwm<-800) Lpwm=-800;
+    9   1              if(Rpwm<-800) Rpwm=-800;
+   10   1              
+   11   1              if(Lpwm>0)
+   12   1              {
+   13   2                      pwm_duty(PWMA_CH2P_P62, 10*Lpwm);
+   14   2                      pwm_duty(PWMA_CH1P_P60, 0);
+   15   2              }
+   16   1              else
+   17   1              {
+   18   2                  pwm_duty(PWMA_CH2P_P62, 0);
+   19   2                      pwm_duty(PWMA_CH1P_P60, (-10)*Lpwm);
+   20   2              }
+   21   1              
+   22   1                      if(Rpwm>0)
+   23   1              {
+   24   2                      pwm_duty(PWMA_CH3P_P64, Rpwm*10);
+   25   2                      pwm_duty(PWMA_CH4P_P66, 0);
+   26   2              }
+   27   1              else
+   28   1              {
+   29   2                  pwm_duty(PWMA_CH3P_P64, 0);
+   30   2                      pwm_duty(PWMA_CH4P_P66, (-10)*Rpwm);
+   31   2              }
+   32   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       199     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

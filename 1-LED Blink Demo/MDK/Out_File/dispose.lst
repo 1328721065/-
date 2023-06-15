@@ -1,0 +1,278 @@
+C251 COMPILER V5.60.0,  dispose                                                            17/10/22  16:58:23  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE dispose
+OBJECT MODULE PLACED IN .\Out_File\dispose.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE dispose.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Libraries
+                    -\libraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src) DEBUG
+                    - PRINT(.\Out_File\dispose.lst) OBJECT(.\Out_File\dispose.obj) 
+
+stmt  level    source
+
+    1          #include "headfile.h"
+    2          
+    3          uint16 L_out_ei=0,L_in_ei=0,R_out_ei=0,R_in_ei=0,R_ba_ei=0,L_ba_ei=0;//左、右电感采集信号
+    4          uint16 sum=0;
+    5          int i=0,j=0,temp=0,k=0;
+    6          uint16 ei[11],ei1[4],ei_sum=0;
+    7          int lastexchange=0,confirm=1,sortborder=9;
+    8          /*左外电感采集*/
+    9          uint16 EI_L_out_dispose()
+   10          {
+   11   1              /*中值平均滤波*/
+   12   1              /*左水平电感采集*/
+   13   1              for(i=0;i<10;i++) 
+   14   1              {
+   15   2                      for(k=0;k<3;k++)
+   16   2                      {
+   17   3                              ei1[k]=adc_once(ADC_P14, ADC_10BIT);
+   18   3                              ei_sum+=ei1[k];
+   19   3                      }
+   20   2              ei[i]=ei_sum/3;
+   21   2                      ei_sum=0;
+   22   2                      if(ei[i]>=1023) ei[i]=1023;
+   23   2                      else if(ei[i]<=0)       ei[i]=0;
+   24   2              }
+   25   1              for(i=0;i<10;i++)
+   26   1              {
+   27   2                      confirm=1;
+   28   2                      for(j=0;j<sortborder;j++)
+   29   2                      {
+   30   3                              if(ei[j]>ei[j+1])
+   31   3                              {
+   32   4                              confirm=0;
+   33   4                              temp=ei[j];
+   34   4                  ei[j]=ei[j+1];
+   35   4                  ei[j+1]=temp;
+   36   4                  lastexchange=j;     
+   37   4                              }                               
+   38   3                      }
+   39   2                      sortborder=lastexchange;
+   40   2                      if(confirm)
+   41   2                      break;
+   42   2              }
+   43   1              for(i=1;i<9;i++)
+   44   1              {
+   45   2                      sum+=ei[i];
+   46   2              }
+   47   1              L_out_ei=sum/8;
+   48   1              sum=0;
+   49   1              return L_out_ei;
+   50   1      }       
+   51          /*右外电感采集*/
+   52          uint16 EI_R_out_dispose()
+   53          {
+   54   1              for(i=0;i<10;i++) 
+   55   1              {
+   56   2                      for(k=0;k<3;k++)
+   57   2                      {
+C251 COMPILER V5.60.0,  dispose                                                            17/10/22  16:58:23  PAGE 2   
+
+   58   3                              ei1[k]=adc_once(ADC_P01, ADC_10BIT);
+   59   3                              ei_sum+=ei1[k];
+   60   3                      }
+   61   2              ei[i]=ei_sum/3;
+   62   2                      ei_sum=0;
+   63   2                      if(ei[i]>=1023) ei[i]=1023;
+   64   2                      else if(ei[i]<=0)       ei[i]=0;
+   65   2              }
+   66   1              for(i=0;i<10;i++)
+   67   1              {
+   68   2                      confirm=1;
+   69   2                      for(j=0;j<sortborder;j++)
+   70   2                      {
+   71   3                              if(ei[j]>ei[j+1])
+   72   3                              {
+   73   4                              confirm=0;
+   74   4                              temp=ei[j];
+   75   4                  ei[j]=ei[j+1];
+   76   4                  ei[j+1]=temp;
+   77   4                  lastexchange=j;     
+   78   4                              }                               
+   79   3                      }
+   80   2                      sortborder=lastexchange;
+   81   2                      if(confirm)
+   82   2                      break;
+   83   2              }
+   84   1              for(i=1;i<9;i++)
+   85   1              {
+   86   2                      sum+=ei[i];
+   87   2              }
+   88   1              R_out_ei=sum/8;
+   89   1              sum=0;
+   90   1              return R_out_ei;
+   91   1      }
+   92          
+   93          /*左内电感采集*/
+   94          uint16 EI_L_in_dispose()
+   95          { 
+   96   1              /*中值平均滤波*/
+   97   1              /*左八字电感采集*/
+   98   1              for(i=0;i<10;i++) 
+   99   1              {
+  100   2              ei[i]=adc_once(ADC_P11, ADC_10BIT);
+  101   2                      if(ei[i]>1024) ei[i]=1024;
+  102   2                      else if(ei[i]<0)        ei[i]=0;
+  103   2              }
+  104   1              for(i=0;i<10;i++)
+  105   1              {
+  106   2                      confirm=1;
+  107   2                      for(j=0;j<sortborder;j++)
+  108   2                      {
+  109   3                              if(ei[j]>ei[j+1])
+  110   3                              {
+  111   4                              confirm=0;
+  112   4                              temp=ei[j];
+  113   4                  ei[j]=ei[j+1];
+  114   4                  ei[j+1]=temp;
+  115   4                  lastexchange=j;     
+  116   4                              }                               
+  117   3                      }
+  118   2                      sortborder=lastexchange;
+  119   2                      if(confirm)
+  120   2                      break;
+  121   2              }
+  122   1              for(i=1;i<9;i++)
+  123   1              {
+C251 COMPILER V5.60.0,  dispose                                                            17/10/22  16:58:23  PAGE 3   
+
+  124   2                      sum+=ei[i];
+  125   2              }
+  126   1              L_in_ei=sum/8;
+  127   1              sum=0;
+  128   1              return L_in_ei;
+  129   1      }
+  130          /*右内字电感采集*/
+  131          uint16 EI_R_in_dispose()        
+  132          {
+  133   1                 for(i=0;i<10;i++) 
+  134   1              {
+  135   2              ei[i]=adc_once(ADC_P06, ADC_10BIT);
+  136   2                      if(ei[i]>1024) ei[i]=1024;
+  137   2                      else if(ei[i]<0)        ei[i]=0;
+  138   2              }
+  139   1              for(i=0;i<9;i++)
+  140   1              {
+  141   2                      confirm=1;
+  142   2                      for(j=0;j<sortborder;j++)
+  143   2                      {
+  144   3                              if(ei[j]>ei[j+1])
+  145   3                              {
+  146   4                              confirm=0;
+  147   4                              temp=ei[j];
+  148   4                  ei[j]=ei[j+1];
+  149   4                  ei[j+1]=temp;
+  150   4                  lastexchange=j;     
+  151   4                              }                               
+  152   3                      }
+  153   2                      sortborder=lastexchange;
+  154   2                      if(confirm)
+  155   2                      break;
+  156   2              }
+  157   1              for(i=1;i<9;i++)
+  158   1              {
+  159   2                      sum+=ei[i];
+  160   2              }
+  161   1              R_in_ei=sum/8;
+  162   1              sum=0;
+  163   1              return R_in_ei;
+  164   1      }
+  165          /*右八字电感采集*/
+  166          uint16 EI_R_ba_dispose()        
+  167          {
+  168   1                 for(i=0;i<10;i++) 
+  169   1              {
+  170   2              ei[i]=adc_once(ADC_P05, ADC_10BIT);
+  171   2                      if(ei[i]>1024) ei[i]=1024;
+  172   2                      else if(ei[i]<0)        ei[i]=0;
+  173   2              }
+  174   1              for(i=0;i<9;i++)
+  175   1              {
+  176   2                      confirm=1;
+  177   2                      for(j=0;j<sortborder;j++)
+  178   2                      {
+  179   3                              if(ei[j]>ei[j+1])
+  180   3                              {
+  181   4                              confirm=0;
+  182   4                              temp=ei[j];
+  183   4                  ei[j]=ei[j+1];
+  184   4                  ei[j+1]=temp;
+  185   4                  lastexchange=j;     
+  186   4                              }                               
+  187   3                      }
+  188   2                      sortborder=lastexchange;
+  189   2                      if(confirm)
+C251 COMPILER V5.60.0,  dispose                                                            17/10/22  16:58:23  PAGE 4   
+
+  190   2                      break;
+  191   2              }
+  192   1              for(i=1;i<9;i++)
+  193   1              {
+  194   2                      sum+=ei[i];
+  195   2              }
+  196   1              R_ba_ei=sum/8;
+  197   1              sum=0;
+  198   1              return R_ba_ei;
+  199   1      }
+  200          /*左八字电感采集*/
+  201          uint16 EI_L_ba_dispose()        
+  202          {
+  203   1                 for(i=0;i<10;i++) 
+  204   1              {
+  205   2              ei[i]=adc_once(ADC_P15, ADC_10BIT);
+  206   2                      if(ei[i]>1024) ei[i]=1024;
+  207   2                      else if(ei[i]<0)        ei[i]=0;
+  208   2              }
+  209   1              for(i=0;i<9;i++)
+  210   1              {
+  211   2                      confirm=1;
+  212   2                      for(j=0;j<sortborder;j++)
+  213   2                      {
+  214   3                              if(ei[j]>ei[j+1])
+  215   3                              {
+  216   4                              confirm=0;
+  217   4                              temp=ei[j];
+  218   4                  ei[j]=ei[j+1];
+  219   4                  ei[j+1]=temp;
+  220   4                  lastexchange=j;     
+  221   4                              }                               
+  222   3                      }
+  223   2                      sortborder=lastexchange;
+  224   2                      if(confirm)
+  225   2                      break;
+  226   2              }
+  227   1              for(i=1;i<9;i++)
+  228   1              {
+  229   2                      sum+=ei[i];
+  230   2              }
+  231   1              L_ba_ei=sum/8;
+  232   1              sum=0;
+  233   1              return L_ba_ei;
+  234   1      }
+  235                  
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1634     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =        60     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        90     ------
+End of Module Information.
+
+C251 COMPILER V5.60.0,  dispose                                                            17/10/22  16:58:23  PAGE 5   
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,106 @@
+C251 COMPILER V5.60.0,  round                                                              17/10/22  16:58:24  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE round
+OBJECT MODULE PLACED IN .\Out_File\round.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE round.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Libraries\l
+                    -ibraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src) DEBUG P
+                    -RINT(.\Out_File\round.lst) OBJECT(.\Out_File\round.obj) 
+
+stmt  level    source
+
+    1          #include "headfile.h"
+    2          #include "parameter.h"
+    3          #include "MOTOR.h"
+    4          #include "math.h"
+    5          #include "dir_control.h"
+    6          
+    7          int round_err=0;
+    8          
+    9          void round_set()
+   10          {       
+   11   1              if((L_out+R_out)>=1750)
+   12   1              {
+   13   2                      round_control=1;
+   14   2                      flag1++;
+   15   2              }
+   16   1          if(flag1!=0)
+   17   1              {
+   18   2              if(p==1)
+   19   2                      {
+   20   3                              if(fabs(L_out-R_out)>=(limit*50))
+   21   3                              {
+   22   4                                      DisableGlobalIRQ();
+   23   4                                      motor_out(-400,700);
+   24   4                                      delay_ms(high);
+   25   4                                      EnableGlobalIRQ();
+   26   4                              }
+   27   3                      }
+   28   2                       if(p==2)
+   29   2                      {
+   30   3                              if(fabs(L_out-R_out)>=(limit*50))
+   31   3                              {
+   32   4                                      DisableGlobalIRQ();
+   33   4                                      motor_out(700,-400);
+   34   4                                      delay_ms(high);
+   35   4                                      EnableGlobalIRQ();
+   36   4                              }
+   37   3                      }
+   38   2              }
+   39   1              if(fabs(L_out-R_out)>=350&&(L_out+R_out)<=1200)
+   40   1              {
+   41   2                      flag2++;
+   42   2                      flag1=0;
+   43   2              }
+   44   1              if(flag2!=0)
+   45   1              {               
+   46   2                      heng_control();
+   47   2              }
+   48   1              if(p==1)
+   49   1              {
+   50   2                      if(L_out-R_out>=400)
+   51   2                      {
+   52   3                              P75=1;
+   53   3                              p=0;
+   54   3                              round_control=0;
+   55   3                              P75=0;
+   56   3                      }
+   57   2              }
+C251 COMPILER V5.60.0,  round                                                              17/10/22  16:58:24  PAGE 2   
+
+   58   1              if(p==2)
+   59   1              {
+   60   2                      if(R_out-L_out>=400)
+   61   2                      {
+   62   3                              P75=1;
+   63   3                              p=0;
+   64   3                              round_control=0;
+   65   3                              P75=0;
+   66   3                      }
+   67   2              }
+   68   1      
+   69   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       308     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =         2     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         6     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

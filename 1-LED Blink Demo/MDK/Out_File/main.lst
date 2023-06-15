@@ -1,0 +1,440 @@
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN .\Out_File\main.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE ..\USER\src\main.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\
+                    -Libraries\libraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\s
+                    -rc) DEBUG PRINT(.\Out_File\main.lst) OBJECT(.\Out_File\main.obj) 
+
+stmt  level    source
+
+    1          /********************************************************************************************************
+             -*************
+    2           * COPYRIGHT NOTICE
+    3           * Copyright (c) 2020,逐飞科技
+    4           * All rights reserved.
+    5           * 技术讨论QQ群：一群：179029047(已满)  二群：244861897(已满)  三群：824575535
+    6           *
+    7           * 以下所有内容版权均属逐飞科技所有，未经允许不得用于商业用途，
+    8           * 欢迎各位使用并传播本程序，修改内容时必须保留逐飞科技的版权声明。
+    9           *
+   10           * @file                main
+   11           * @company                     成都逐飞科技有限公司
+   12           * @author              逐飞科技(QQ790875685)
+   13           * @version             查看doc内version文件 版本说明
+   14           * @Software            MDK FOR C251 V5.60
+   15           * @Target core         STC16F40K128
+   16           * @Taobao              https://seekfree.taobao.com/
+   17           * @date                2020-12-18
+   18           ********************************************************************************************************
+             -************/
+   19          
+   20          #include "headfile.h"
+   21          #include "MOTOR.h"
+   22          #include "math.h"
+   23          #include "dispose.h"
+   24          #include "car_direction.h"
+   25          #include "KEY.h"
+   26          #include "parameter.h"
+   27          #include "round.h"
+   28          #include "dir_control.h"
+   29          /*
+   30           *关于内核频率的设定，可以查看board.h文件
+   31           *在board_init中,已经将P54引脚设置为复位
+   32           *如果需要使用P54引脚,可以在board.c文件中的board_init()函数中删除SET_P54_RESRT即可
+   33           */
+   34          //uint16 L_out_max=1024,L_out_min=0; //左侧外电感极限值
+   35          //uint16 R_out_max=1024,R_out_min=0; //右侧外电感极限值
+   36          //uint16 L_in_max=1024,L_in_min=0; //左侧内电感极限值
+   37          //uint16 R_in_max=1024,R_in_min=0; //右侧内电感极限值
+   38          
+   39          
+   40          void motor_out(int Lpwm,int Rpwm);
+   41          void oled_zhunbei();
+   42          void main()
+   43          {
+   44   1              DisableGlobalIRQ();     //关闭总中断    
+   45   1          //sys_clk可选值:30000000, 27000000. 24000000, 22118400, 20000000, 18432000, 12000000, 11059200, 60000
+             -00, 5529600。
+   46   1          //设置系统频率，此频率需要跟STC-ISP软件中的 <输入用户程序运行的IRC频率>选项的频率一致。
+   47   1          //如果频率设置不对，将会导致串口的数据不正常,PWM的工作不正常等等。
+   48   1          sys_clk = 30000000;     //设置系统频率为30MHz
+   49   1      
+   50   1              board_init();
+   51   1              /*oled初始化*/
+   52   1              oled_init();
+   53   1              
+   54   1      //      gpio_mode(P5_1,GPO_PP);
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 2   
+
+   55   1              
+   56   1              gpio_mode(P4_0,GPIO);//五个按键设置为准双向模式
+   57   1              gpio_mode(P4_1,GPIO);
+   58   1              gpio_mode(P4_2,GPIO);
+   59   1              gpio_mode(P4_3,GPIO);
+   60   1              gpio_mode(P4_4,GPIO);
+   61   1              gpio_mode(P4_5,GPIO);
+   62   1              gpio_mode(P4_6,GPIO);
+   63   1              gpio_mode(P7_5,GPO_PP);
+   64   1              P75=0;
+   65   1              /*电机初始化*/
+   66   1          pwm_init(PWMA_CH4P_P66, 15000, 0); //PWM1初始化 左后轮正转
+   67   1              pwm_init(PWMA_CH1P_P60, 15000, 0); //PMW2初始化 左后轮反转
+   68   1              pwm_init(PWMA_CH3P_P64, 15000, 0); //PWM3初始化 右后轮正转
+   69   1              pwm_init(PWMA_CH2P_P62, 15000, 0); //PWM4初始化 右后轮反转
+   70   1              /*编码器初始化*/
+   71   1              ctimer_count_init(CTIM0_P34);
+   72   1              ctimer_count_init(CTIM3_P04);   
+   73   1              /*陀螺仪初始化*/
+   74   1              /*ADC初始化*/
+   75   1              adc_init(ADC_P14,ADC_SYSclk_DIV_2); //左外电感
+   76   1      //      adc_init(ADC_P11,ADC_SYSclk_DIV_2);     //左内电感
+   77   1      //      adc_init(ADC_P06,ADC_SYSclk_DIV_2); //右内电感
+   78   1              adc_init(ADC_P01,ADC_SYSclk_DIV_2); //右外电感
+   79   1              adc_init(ADC_P15,ADC_SYSclk_DIV_2); //左八字电感
+   80   1              adc_init(ADC_P05,ADC_SYSclk_DIV_2); //右八字电感
+   81   1      //      adc_init(ADC_P13,ADC_SYSclk_DIV_2); //左竖电感
+   82   1      //      adc_init(ADC_P10,ADC_SYSclk_DIV_2); //右竖电感
+   83   1              /*分别寻找左、右电感最大值*/
+   84   1      //    scan();
+   85   1          oled_zhunbei();
+   86   1      //      BEE=1;
+   87   1      //      delay_ms(1000);
+   88   1      //      BEE=0;
+   89   1          //无线串口初始化
+   90   1              uart_init(UART_4, UART4_RX_P02, UART4_TX_P03, 115200, TIM_2);
+   91   1              /*定时器设置与中断优先级设置*/
+   92   1      //      NVIC_SetPriority(TIMER1_IRQn, 3);
+   93   1              pit_timer_ms(TIM_4, 20); //初始化定时器1，周期为20ms
+   94   1          pit_timer_ms(TIM_1, 5); // 初始化定时器2，周期为5ms
+   95   1      //      NVIC_SetPriority(TIMER1_IRQn, 3);
+   96   1              EnableGlobalIRQ();//开启总中断
+   97   1          while(1)
+   98   1              {
+   99   2              key_control=key_choose();
+  100   2              if(key_control==1)
+  101   2              {
+  102   3              oled_fill(0x00);
+  103   3              oled_p6x8str(8,2,"L-pluse:");
+  104   3              oled_p6x8str(8,3,"R-pluse:");
+  105   3              oled_p6x8str(8,4,"t_speed:");   
+  106   3                    while(1)
+  107   3                   {
+  108   4                         key_control=key_choose();
+  109   4                 oled_uint16(8,0, L_out);
+  110   4                 oled_uint16(8,1, R_out);
+  111   4                         oled_uint16(60,0, L_ba);
+  112   4                 oled_uint16(60,1, R_ba); 
+  113   4                 oled_int16(60,2,L_pluse);
+  114   4                         oled_int16(60,3,R_pluse);
+  115   4                         oled_int16(60,4,real_speed);
+  116   4                         oled_printf_float(8,5,dir_err_ba,3,2); 
+  117   4                         oled_printf_float(8,6,err_cha,3,2); 
+  118   4                     oled_printf_float(8,7,dir_err_sum,3,1);
+  119   4                         oled_int16(70, 6, dutyL);
+  120   4                         oled_int16(70, 7, dutyR); 
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 3   
+
+  121   4                              if(ting!=0)
+  122   4                     {
+  123   5                           motor_out(0,0);
+  124   5                           DisableGlobalIRQ();        
+  125   5                           while(1)
+  126   5                          {
+  127   6                                 key_control=key_choose();
+  128   6                                      if(key_control==7)
+  129   6                                      {
+  130   7                                              ting=0;
+  131   7                                              key_control=0;
+  132   7                                              EnableGlobalIRQ();
+  133   7                                              break;
+  134   7                                      }
+  135   6                           }
+  136   5                     }
+  137   4                               if(key_control==3)
+  138   4                                       break;
+  139   4                   } 
+  140   3          }
+  141   2              if(key_control==3)
+  142   2              {
+  143   3                      oled_fill(0x00);
+  144   3                              while(1)
+  145   3                              {
+  146   4                              key_control=key_choose();
+  147   4                                      if(key_control==1)
+  148   4                                              break;
+  149   4                              }
+  150   3              }
+  151   2              }
+  152   1      }
+  153          void TM4_Isr() interrupt 20
+  154          {
+  155   1          motor_direction_control();
+  156   1      }
+  157          
+  158          void TM1_Isr() interrupt 3
+  159          {
+  160   1      //      count++;
+  161   1              L_out=EI_L_out_dispose();
+  162   1              R_out=EI_R_out_dispose();
+  163   1              R_ba=EI_R_ba_dispose();
+  164   1              L_ba=EI_L_ba_dispose();
+  165   1              if(L_out<=70&&R_out<=70)
+  166   1              {
+  167   2                      ting++;
+  168   2              }
+  169   1              dir_in_sum=(float)(L_out+R_out);
+  170   1              dir_in_ba=(float)(L_ba+R_ba);
+  171   1              dir_err_sum=1000*(float)(sqrt((float)L_out)-sqrt((float)R_out))/dir_in_sum;
+  172   1              dir_err_ba=1000*(float)(sqrt((float)L_ba)-sqrt((float)R_ba))/dir_in_ba;
+  173   1              if(p!=0)
+  174   1              {
+  175   2             round_set();
+  176   2          }
+  177   1              if(round_control==0)
+  178   1              {
+  179   2              if(L_out+R_out<=700&&fabs(dir_err_sum)<10)
+  180   2              {
+  181   3      //                 P75=1;
+  182   3                      ba_control();
+  183   3              }
+  184   2              else
+  185   2              {
+  186   3      //              P75=0;
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 4   
+
+  187   3              heng_control();
+  188   3              }
+  189   2          }
+  190   1      }
+  191          void oled_zhunbei()
+  192          {
+  193   1              while(1)
+  194   1              {
+  195   2              oled_p6x8str(0,choose_out,">");
+  196   2              oled_p6x8str(8,0,"t/s");
+  197   2              oled_p6x8str(8,1,"round");
+  198   2              oled_p6x8str(8,2,"fork");
+  199   2          oled_p6x8str(8,3,"start");
+  200   2              key_control=key_choose();
+  201   2              if(key_control==1) {for(n=0;n<=6;n++) {oled_clrpixel(n,choose_out);}if(choose_out>0) choose_out--; }
+  202   2              else if(key_control==3) {for(n=0;n<=6;n++) {oled_clrpixel(n,choose_out);}if(choose_out<3) choose_out++; 
+             -}
+  203   2              if(key_control==5)
+  204   2              {
+  205   3                      oled_fill(0x00);
+  206   3                      m=0;
+  207   3                      key_control=0;
+  208   3              switch(choose_out)
+  209   3              {
+  210   4                      case 0:
+  211   4                                  oled_p6x8str(0,m,">");
+  212   4                                      oled_p6x8str(8,0,"sKP:");
+  213   4                          oled_p6x8str(8,1,"sKI:");
+  214   4                          oled_p6x8str(8,2,"sKD:");
+  215   4                              oled_p6x8str(8,3,"LKP:");
+  216   4                              oled_p6x8str(8,4,"LKD:");
+  217   4                              oled_p6x8str(8,5,"HKD:");
+  218   4                              oled_p6x8str(8,6,"HKD:");
+  219   4                              oled_p6x8str(8,7,"duty:");
+  220   4                              oled_printf_float(40,0,speed_KP,1,3);
+  221   4                              oled_printf_float(40,1,speed_KI,1,2);
+  222   4                              oled_printf_float(40,2,speed_KD,2,1);
+  223   4                              oled_printf_float(40,3,turn_KP_low,3,1);
+  224   4                              oled_printf_float(40,4,turn_KD_low,4,1);
+  225   4                              oled_printf_float(40,5,turn_KP_high,3,1);
+  226   4                              oled_printf_float(40,6,turn_KD_high,4,1);
+  227   4                              oled_int16(44,7,duty_high);
+  228   4                                  while(1)
+  229   4                                  {
+  230   5                                        choose_in=key_choose();
+  231   5                                              if(choose_in!=0)
+  232   5                                 {
+  233   6                                       if(choose_in==1)
+  234   6                                       {
+  235   7                                             for(n=0;n<=6;n++) {oled_clrpixel(n,m);}  
+  236   7                                             if(m!=0) m--;
+  237   7                                             oled_p6x8str(0,m,">");
+  238   7                                       }
+  239   6                                       if(choose_in==3)
+  240   6                                       {
+  241   7                                           for(n=0;n<6;n++){oled_clrpixel(n,m);}
+  242   7                           if(m<8) m++;
+  243   7                                           oled_p6x8str(0,m,">");
+  244   7                                               }
+  245   6                                       if(choose_in==4)
+  246   6                                       {
+  247   7                                            switch(m)
+  248   7                                           {
+  249   8                                                  case 0:speed_KP+=0.1;oled_printf_float(40,0,speed_KP,1,3);break;
+  250   8                                                      case 1:speed_KI+=0.01;oled_printf_float(40,1,speed_KI,1,2);break; 
+  251   8                                                  case 2:speed_KD+=1;oled_printf_float(40,2,speed_KD,3,1);break;
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 5   
+
+  252   8                                                      case 3:turn_KP_low+=1;oled_printf_float(40,3,turn_KP_low,3,1);break;
+  253   8                                                      case 4:turn_KD_low+=5;oled_printf_float(40,4,turn_KD_low,4,1);break;
+  254   8                                                      case 5:turn_KP_high+=1;oled_printf_float(40,5,turn_KP_high,3,1);break;
+  255   8                                                      case 6:turn_KD_high+=5;oled_printf_float(40,6,turn_KD_high,4,1);break;
+  256   8                                                  case 7:duty_high+=10;oled_int16(44,7,duty_high);break;
+  257   8                                           }
+  258   7                                       }
+  259   6                                       if(choose_in==2)
+  260   6                                       {
+  261   7                                           switch(m)
+  262   7                                           {
+  263   8                                                  case 0:speed_KP-=0.1;oled_printf_float(40,0,speed_KP,1,3);break;
+  264   8                                                      case 1:speed_KI-=0.01;oled_printf_float(40,1,speed_KI,1,2);break; 
+  265   8                                                  case 2:speed_KD-=1;oled_printf_float(40,2,speed_KD,3,1);break;
+  266   8                                                      case 3:turn_KP_low-=1;oled_printf_float(40,3,turn_KP_low,3,1);break;
+  267   8                                                      case 4:turn_KD_low-=5;oled_printf_float(40,4,turn_KD_low,4,1);break;
+  268   8                                                      case 5:turn_KP_high-=1;oled_printf_float(40,5,turn_KP_high,3,1);break;
+  269   8                                                      case 6:turn_KD_high-=5;oled_printf_float(40,6,turn_KD_high,4,1);break;
+  270   8                                                  case 7:duty_high-=10;oled_int16(44,7,duty_high);break;
+  271   8                                           }
+  272   7                                       }
+  273   6                                     if(choose_in==5)
+  274   6                                     {
+  275   7                                         oled_fill(0x00);
+  276   7                                          choose_in=0;
+  277   7                          m=0;                                           
+  278   7                                         break;
+  279   7                                     }
+  280   6                                 }    
+  281   5                                  }
+  282   4                                      break;
+  283   4                       case 1:
+  284   4                                  oled_p6x8str(0,m,">");
+  285   4                                      oled_p6x8str(8,0,"on/off:");
+  286   4                          oled_p6x8str(8,1,"limit:");
+  287   4                              oled_p6x8str(8,2,"high:");
+  288   4                              oled_uint16(70,0,p);
+  289   4                              oled_uint16(70,1,limit);
+  290   4                              oled_int16(60,2,high);
+  291   4                               while(1)
+  292   4                                  {
+  293   5                                        choose_in=key_choose();
+  294   5                                              if(choose_in!=0)
+  295   5                                 {
+  296   6                                       if(choose_in==1)
+  297   6                                       {
+  298   7                                             for(n=0;n<=6;n++) {oled_clrpixel(n,m);}  
+  299   7                                             if(m!=0) m--;
+  300   7                                             oled_p6x8str(0,m,">");
+  301   7                                       }
+  302   6                                       if(choose_in==3)
+  303   6                                       {
+  304   7                                           for(n=0;n<6;n++){oled_clrpixel(n,m);}
+  305   7                           if(m<4) m++;
+  306   7                                           oled_p6x8str(0,m,">");
+  307   7                                               }
+  308   6                                       if(choose_in==2)
+  309   6                                       {
+  310   7                                           switch(m)
+  311   7                                           {
+  312   8                                                       case 0:p-=1;oled_uint16(70,0,p);break;
+  313   8                                                   case 1:limit-=1;oled_uint16(70,1,limit);break;
+  314   8                                                       case 2:high-=100; oled_int16(60,2,high);break;                      
+  315   8                                               }
+  316   7                                       }
+  317   6                                               if(choose_in==4)
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 6   
+
+  318   6                                       {
+  319   7                                           switch(m)
+  320   7                                           {
+  321   8                                                       case 0:p+=1;oled_uint16(70,0,p);break;
+  322   8                                                   case 1:limit+=1;oled_uint16(70,1,limit);break;
+  323   8                                                       case 2:high+=100; oled_int16(60,2,high);break;
+  324   8                                           }
+  325   7                                       }
+  326   6                                     if(choose_in==5)
+  327   6                                     {
+  328   7                                         oled_fill(0x00);
+  329   7                                          choose_in=0;
+  330   7                          m=0;                                           
+  331   7                                         break;
+  332   7                                     }
+  333   6                                 }    
+  334   5                                  }
+  335   4                                      break;
+  336   4                      case 3:
+  337   4                                  oled_fill(0x00);
+  338   4                                      begin=1;
+  339   4                              break;
+  340   4              }
+  341   3          }
+  342   2              if(begin!=0) break;
+  343   2           }
+  344   1      }
+  345                  
+  346          
+  347          //void scan()
+  348          //{
+  349          //      uint16 i,L_out_ei1=0,L_in_ei1=0,R_out_ei1=0,R_in_ei1=0;
+  350          //      for(i=0;i<1000;i++)  //左外电感
+  351          //      {
+  352          //          L_out_ei1=adc_once(ADC_P00, ADC_10BIT);
+  353          //              if(L_out_max<=L_out_ei1)
+  354          //                      L_out_max=L_out_ei1;
+  355          //              if(L_out_min>=L_out_ei1)
+  356          //                      L_out_min=L_out_ei1;
+  357          //      }
+  358          //      
+  359          //              for(i=0;i<1000;i++) //左内电感
+  360          //      {
+  361          //          L_in_ei1=adc_once(ADC_P01, ADC_10BIT);
+  362          //              if(L_in_max<L_in_ei1)
+  363          //                      L_in_max=L_in_ei1;
+  364          //              if(L_in_min>L_in_ei1)
+  365          //                      L_in_min=L_in_ei1;
+  366          //      }
+  367          //      
+  368          //              for(i=0;i<1000;i++) //右外电感
+  369          //      {
+  370          //          R_out_ei1=adc_once(ADC_P06, ADC_10BIT);
+  371          //              if(R_out_max<R_out_ei1)
+  372          //                      R_out_max=R_out_ei1;
+  373          //              if(R_out_min>R_out_ei1)
+  374          //                      R_out_min=R_out_ei1;
+  375          //      }
+  376          //      
+  377          //              for(i=0;i<1000;i++) //右内电感
+  378          //      {
+  379          //          R_in_ei1=adc_once(ADC_P05, ADC_10BIT);
+  380          //              if(R_in_max<R_in_ei1)
+  381          //                      R_in_max=R_in_ei1;
+  382          //              if(R_in_min>R_in_ei1)
+  383          //                      R_in_min=R_in_ei1;
+C251 COMPILER V5.60.0,  main                                                               20/10/22  22:29:41  PAGE 7   
+
+  384          //      }
+  385          //}
+  386          
+  387          
+  388          
+  389          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      2852     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       107     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,57 @@
+C251 COMPILER V5.60.0,  KEY                                                                17/10/22  16:58:24  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Out_File\KEY.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE KEY.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Libraries\lib
+                    -raries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src) DEBUG PRI
+                    -NT(.\Out_File\KEY.lst) OBJECT(.\Out_File\KEY.obj) 
+
+stmt  level    source
+
+    1          #include "headfile.h"
+    2          #include "zf_delay.h"
+    3          /*
+    4          P35:确认
+    5          P36:上移
+    6          P37:下移
+    7          P70:增加
+    8          P71:减少
+    9          */
+   10          
+   11          uint8 key_choose()
+   12          {
+   13   1              uint8 num=0;
+   14   1              if(P40==0) {delay_ms(10);while(P40==0);delay_ms(10);num=1;}
+   15   1              if(P41==0) {delay_ms(10);while(P41==0);delay_ms(10);num=2;}
+   16   1              if(P42==0) {delay_ms(10);while(P42==0);delay_ms(10);num=3;}
+   17   1              if(P43==0) {delay_ms(10);while(P43==0);delay_ms(10);num=4;}
+   18   1              if(P44==0) {delay_ms(10);while(P44==0);delay_ms(10);num=5;}
+   19   1              if(P45==0) {delay_ms(10);while(P45==0);delay_ms(10);num=6;}
+   20   1              if(P46==0) {delay_ms(10);while(P46==0);delay_ms(10);num=7;}
+   21   1              return num;
+   22   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       212     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

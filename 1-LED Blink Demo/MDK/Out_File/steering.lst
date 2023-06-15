@@ -1,0 +1,54 @@
+C251 COMPILER V5.60.0,  steering                                                           24/08/22  18:54:23  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE steering
+OBJECT MODULE PLACED IN .\Out_File\steering.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE steering.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Librarie
+                    -s\libraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src) DEBU
+                    -G PRINT(.\Out_File\steering.lst) OBJECT(.\Out_File\steering.obj) 
+
+stmt  level    source
+
+    1          #include <headfile.h>
+    2          
+    3          void steering_init(uint32 frequency,int angle)
+    4          {
+    5   1              uint16 PWMs_duty;
+    6   1              if(angle>85) angle=85;
+    7   1              if(angle<-85) angle=-85;
+    8   1              PWMs_duty=730+angle;
+    9   1              pwm_init(PWMB_CH3_P33,frequency,PWMs_duty);
+   10   1      }
+   11          
+   12          void steering_angle(int angle)
+   13          {
+   14   1              uint16 PWMS_duty;
+   15   1          if(angle>85) angle=85;
+   16   1              if(angle<-85) angle=-85;
+   17   1              PWMS_duty=730+angle;
+   18   1              pwm_duty(PWMB_CH3_P33,PWMS_duty);       
+   19   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =        78     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

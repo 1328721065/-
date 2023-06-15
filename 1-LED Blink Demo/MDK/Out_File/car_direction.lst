@@ -1,0 +1,108 @@
+C251 COMPILER V5.60.0,  car_direction                                                      20/10/22  22:39:33  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE car_direction
+OBJECT MODULE PLACED IN .\Out_File\car_direction.obj
+COMPILER INVOKED BY: D:\keil_c251\C251\BIN\C251.EXE car_direction.c XSMALL INTR2 WARNINGLEVEL(3) BROWSE INCDIR(..\..\Lib
+                    -raries\libraries;..\..\Libraries\seekfree_libraries;..\..\Libraries\seekfree_peripheral;..\CODE;..\USER\inc;..\USER\src)
+                    - DEBUG PRINT(.\Out_File\car_direction.lst) OBJECT(.\Out_File\car_direction.obj) 
+
+stmt  level    source
+
+    1          #include "headfile.h"
+    2          #include "MOTOR.h"
+    3          #include "KEY.h"
+    4          #include "math.h"
+    5          #include "parameter.h"
+    6          
+    7          
+    8          #define DIR1 P35 //左
+    9          #define DIR2 P07 //右
+   10          
+   11          void motor_direction_control()
+   12          {
+   13   1                 /*速度环*/
+   14   1              if(DIR1==1)//左
+   15   1              {
+   16   2                      L_pluse=ctimer_count_read(CTIM0_P34);
+   17   2      
+   18   2              }
+   19   1              else
+   20   1              {
+   21   2                      L_pluse=-1*ctimer_count_read(CTIM0_P34);
+   22   2      
+   23   2              }
+   24   1              ctimer_count_clean(CTIM0_P34);
+   25   1              if(DIR2==1)//右
+   26   1              {
+   27   2                      R_pluse=-1*ctimer_count_read(CTIM3_P04);
+   28   2      
+   29   2              }
+   30   1              else
+   31   1              {
+   32   2                      R_pluse=ctimer_count_read(CTIM3_P04);
+   33   2      
+   34   2              }
+   35   1              ctimer_count_clean(CTIM3_P04);
+   36   1              if(L_out+R_out>=700&&fabs(dir_err_sum)<10)
+   37   1              {
+   38   2              err_speed[0]=duty_high-(L_pluse+R_pluse)/4;
+   39   2              }       
+   40   1              else
+   41   1              {
+   42   2              err_speed[0]=duty_low-(L_pluse+R_pluse)/4;
+   43   2              }
+   44   1          //积分分离
+   45   1              //抗积分饱和
+   46   1              if(speed_Integral>=Integral_max)
+   47   1                      if(err_speed[0]<0)
+   48   1                     speed_Integral+=err_speed[0];
+   49   1              if(speed_Integral<=Integral_min)
+   50   1                      if(err_speed[0]>0)
+   51   1                     speed_Integral+=err_speed[0];
+   52   1              real_speed=err_speed[0]*speed_KP+speed_KI*speed_Integral;
+   53   1              if(speed_Integral>Integral_max)
+   54   1                      speed_Integral=Integral_max;
+   55   1              if(speed_Integral<Integral_min)
+   56   1                      speed_Integral=Integral_min;
+   57   1              if(real_speed>speed_max)
+C251 COMPILER V5.60.0,  car_direction                                                      20/10/22  22:39:33  PAGE 2   
+
+   58   1              {
+   59   2                      real_speed=speed_max;
+   60   2              }
+   61   1          err_speed[1]=err_speed[0];
+   62   1              c=real_speed;
+   63   1      //  b1=R_real_speed;    
+   64   1          printf("c=%d\r\n",c);
+   65   1      }
+   66          //void steering_direction_control(float err)
+   67          //{   
+   68          //      err_end=(int)(steer_KP*err+steer_KD*(err-last_err));            
+   69          //      steering_angle(err_end);
+   70          //      last_err=err;
+   71          //}
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       357     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         7     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
